@@ -4,21 +4,23 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity
 {
     public static boolean isOpened;
-    private TextView txtLanternState;
+    private TextView txtTorchState;
+    private String TAG;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        txtLanternState = findViewById(R.id.txtLanternState);
-        txtLanternState.setText("Lantern OFF");
+        TAG = getString(R.string.app_name);
+
+        txtTorchState = findViewById(R.id.txtTorchState);
+        txtTorchState.setText("Torch OFF");
 
         Intent intent = new Intent(this, ShakeService.class);
         startService(intent);
@@ -30,14 +32,12 @@ public class MainActivity extends AppCompatActivity
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
 
-        boolean state = intent.getBooleanExtra("lanternStatus", false);
+        boolean status = intent.getBooleanExtra("torchStatus", false);
 
-        if(state) {
-            Log.d(getString(R.string.app_name), "onNewIntent: on");
-            txtLanternState.setText("Lantern ON");
+        if(status) {
+            txtTorchState.setText("Torch ON");
         } else {
-            Log.d(getString(R.string.app_name), "onNewIntent: off");
-            txtLanternState.setText("Lantern OFF");
+            txtTorchState.setText("Torch OFF");
         }
     }
 

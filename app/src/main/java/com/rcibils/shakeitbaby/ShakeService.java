@@ -106,8 +106,15 @@ public class ShakeService extends Service implements SensorEventListener
     private void toggleTorch(long now)
     {
         try {
-            cameraManager.setTorchMode(cameraId, status);
             status = !status;
+            cameraManager.setTorchMode(cameraId, status);
+
+            if(MainActivity.isOpened){
+                Intent intent = new Intent(this, MainActivity.class);
+                intent.putExtra("torchStatus", status);
+                intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
+            }
         } catch(CameraAccessException e){
             Log.e(TAG, "toggleTorch: " + e.getMessage());
         }
