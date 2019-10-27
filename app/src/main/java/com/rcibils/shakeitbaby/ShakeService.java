@@ -95,7 +95,7 @@ public class ShakeService extends Service implements SensorEventListener
             ++shakeCount;
 
             if(shakeCount >= SHAKES_REQUIRED){
-                toggleTorch(now);
+                toggleTorch();
             }
         }
     }
@@ -103,11 +103,12 @@ public class ShakeService extends Service implements SensorEventListener
     @Override
     public void onDestroy() {
         super.onDestroy();
+        if(status) toggleTorch();
         isRunning = false;
         manager.unregisterListener(this);
     }
 
-    private void toggleTorch(long now)
+    private void toggleTorch()
     {
         try {
             status = !status;
