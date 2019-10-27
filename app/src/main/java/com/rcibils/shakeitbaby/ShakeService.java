@@ -7,6 +7,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraManager;
 import android.os.Handler;
 import android.os.IBinder;
@@ -18,17 +19,18 @@ public class ShakeService extends Service implements SensorEventListener
 {
     private SensorManager manager;
     private Sensor accelerometerSensor;
-    private float accel;
-    private float curAccel;
-    private float lastAccel;
-    private boolean posAccelReached;
-    private boolean negAccelReached;
-    private static final float MAX_ACCEL = 30.0f;
-    private static final long MAX_TIME = 500;
     private CameraManager cameraManager;
     private String cameraId;
     private boolean status;
-    private long lastStateChange;
+
+    private static final float SHAKE_THRESHOLD_GRAVITY = 2.7f;
+    private static final int SHAKE_SLOP = 1000;
+    private static final int SHAKE_TIMOUT = 3000;
+    private static final int SHAKES_REQUIRED = 3;
+    private long shakeTime;
+    private int shakeCount;
+
+    private String TAG;
 
     public ShakeService() {
     }
@@ -41,18 +43,18 @@ public class ShakeService extends Service implements SensorEventListener
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d(getString(R.string.app_name), "onStartCommand: servicio iniciado");
+        TAG = getString(R.string.app_name);
+        Log.d(TAG, "onStartCommand: service on");
         manager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
         accelerometerSensor = manager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         manager.registerListener(this, accelerometerSensor, SensorManager.SENSOR_DELAY_UI,
                 new Handler());
         status = false;
-        lastStateChange = Calendar.getInstance().getTime().getTime();
         cameraManager = (CameraManager)getSystemService(Context.CAMERA_SERVICE);
         try{
             cameraId = cameraManager.getCameraIdList()[0];
         } catch(Exception e){
-            Log.e(getString(R.string.app_name), "onStartCommand: " + e.getMessage());
+            Log.e(TAG, "onStartCommand: " + e.getMessage());
         }
 
         return START_STICKY;
@@ -64,40 +66,33 @@ public class ShakeService extends Service implements SensorEventListener
     }
 
     @Override
-    public void onSensorChanged(SensorEvent event) {
+    public void onSensorChanged(SensorEvent event)
+    {
         float x = event.values[0];
         float y = event.values[1];
         float z = event.values[2];
 
-        lastAccel = curAccel;
-        curAccel = (float)Math.sqrt((double)(x*x + y*y + z*z));
-        float delta = curAccel - lastAccel;
-        accel = accel * 0.9f + delta;
+        float gX = x / SensorManager.GRAVITY_EARTH;
+        float gY = y / SensorManager.GRAVITY_EARTH;
+        float gZ = z / SensorManager.GRAVITY_EARTH;
 
-        if(accel > 0f && accel > MAX_ACCEL)
-            posAccelReached = true;
-        if(accel < 0f && accel < -MAX_ACCEL)
-            negAccelReached = true;
+        double gForce = Math.sqrt(gX * gX + gY * gY + gZ * gZ);
 
-        if(posAccelReached && negAccelReached){
-            posAccelReached = false;
-            negAccelReached = false;
-            long curTime = Calendar.getInstance().getTime().getTime();
-            if(curTime - lastStateChange > MAX_TIME) {
-                try{
-                    cameraManager.setTorchMode(cameraId, status);
-                    lastStateChange = curTime;
-                    status = !status;
-                    if(MainActivity.isOpened){
-                        Intent intent = new Intent(this, MainActivity.class);
-                        intent.putExtra("lanternStatus", status);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                        startActivity(intent);
-                    }
-                } catch(Exception e){
-                    Log.e(getString(R.string.app_name), "onSensorChanged: "
-                            + e.getMessage());
-                }
+        if(gForce > SHAKE_THRESHOLD_GRAVITY){
+            final long now = Calendar.getInstance().getTimeInMillis();
+            if(shakeTime + SHAKE_SLOP > now){
+                return;
+            }
+
+            if(shakeTime + SHAKE_TIMOUT < now){
+                shakeCount = 0;
+            }
+
+            shakeTime = now;
+            ++shakeCount;
+
+            if(shakeCount >= SHAKES_REQUIRED){
+                toggleTorch(now);
             }
         }
     }
@@ -106,5 +101,15 @@ public class ShakeService extends Service implements SensorEventListener
     public void onDestroy() {
         super.onDestroy();
         manager.unregisterListener(this);
+    }
+
+    private void toggleTorch(long now)
+    {
+        try {
+            cameraManager.setTorchMode(cameraId, status);
+            status = !status;
+        } catch(CameraAccessException e){
+            Log.e(TAG, "toggleTorch: " + e.getMessage());
+        }
     }
 }
