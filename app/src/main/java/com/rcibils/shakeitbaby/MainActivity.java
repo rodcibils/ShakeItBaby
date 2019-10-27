@@ -27,7 +27,7 @@ public class MainActivity extends AppCompatActivity
         txtServiceStatus = findViewById(R.id.txtServiceStatus);
         btnToggleService = findViewById(R.id.btnToggleService);
 
-        txtTorchStatus.setText("Torch OFF");
+        txtTorchStatus.setText(getString(R.string.torch_status_off));
 
         btnToggleService.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -35,11 +35,11 @@ public class MainActivity extends AppCompatActivity
                 Intent intent = new Intent(getApplicationContext(), ShakeService.class);
                 if(ShakeService.isRunning){
                     stopService(intent);
-                    txtServiceStatus.setText("Service OFF");
+                    txtServiceStatus.setText(getString(R.string.service_status_off));
                     btnToggleService.setText(R.string.btn_service_enable);
                 } else {
                     startService(intent);
-                    txtServiceStatus.setText("Service ON");
+                    txtServiceStatus.setText(getString(R.string.service_status_on));
                     btnToggleService.setText(R.string.btn_service_disable);
                 }
             }
@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity
             Intent intent = new Intent(this, ShakeService.class);
             startService(intent);
         }
-        txtServiceStatus.setText("Service ON");
+        txtServiceStatus.setText(getString(R.string.service_status_on));
         btnToggleService.setText(R.string.btn_service_disable);
 
         isOpened = true;
@@ -62,9 +62,9 @@ public class MainActivity extends AppCompatActivity
         boolean status = intent.getBooleanExtra("torchStatus", false);
 
         if(status) {
-            txtTorchStatus.setText("Torch ON");
+            txtTorchStatus.setText(getString(R.string.torch_status_on));
         } else {
-            txtTorchStatus.setText("Torch OFF");
+            txtTorchStatus.setText(getString(R.string.torch_status_off));
         }
     }
 

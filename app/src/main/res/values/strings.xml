@@ -2,4 +2,8 @@
     <string name="app_name">ShakeItBaby</string>
     <string name="btn_service_enable">ENABLE SERVICE</string>
     <string name="btn_service_disable">DISABLE SERVICE</string>
+    <string name="torch_status_on">Torch ON</string>
+    <string name="torch_status_off">Torch OFF</string>
+    <string name="service_status_on">Service ON</string>
+    <string name="service_status_off">Service OFF</string>
 </resources>
