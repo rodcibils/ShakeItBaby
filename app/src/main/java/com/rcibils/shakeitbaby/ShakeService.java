@@ -17,6 +17,8 @@ import java.util.Calendar;
 
 public class ShakeService extends Service implements SensorEventListener
 {
+    public static boolean isRunning = false;
+
     private SensorManager manager;
     private Sensor accelerometerSensor;
     private CameraManager cameraManager;
@@ -43,6 +45,7 @@ public class ShakeService extends Service implements SensorEventListener
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        isRunning = true;
         TAG = getString(R.string.app_name);
         Log.d(TAG, "onStartCommand: service on");
         manager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
@@ -100,6 +103,7 @@ public class ShakeService extends Service implements SensorEventListener
     @Override
     public void onDestroy() {
         super.onDestroy();
+        isRunning = false;
         manager.unregisterListener(this);
     }
 

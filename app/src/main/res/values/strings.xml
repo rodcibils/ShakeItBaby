@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">ShakeItBaby</string>
+    <string name="btn_service_enable">ENABLE SERVICE</string>
+    <string name="btn_service_disable">DISABLE SERVICE</string>
 </resources>
