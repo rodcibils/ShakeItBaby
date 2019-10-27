@@ -27,7 +27,7 @@ public class ShakeService extends Service implements SensorEventListener
 
     private static final float SHAKE_THRESHOLD_GRAVITY = 2.7f;
     private static final int SHAKE_SLOP = 1000;
-    private static final int SHAKE_TIMOUT = 3000;
+    private static final int SHAKE_TIMEOUT = 3000;
     private static final int SHAKES_REQUIRED = 3;
     private long shakeTime;
     private int shakeCount;
@@ -87,7 +87,7 @@ public class ShakeService extends Service implements SensorEventListener
                 return;
             }
 
-            if(shakeTime + SHAKE_TIMOUT < now){
+            if(shakeTime + SHAKE_TIMEOUT < now){
                 shakeCount = 0;
             }
 
